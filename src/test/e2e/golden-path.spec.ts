@@ -55,8 +55,8 @@ test.describe("Parcours complet d'un tournoi", () => {
 
       for (const player of [playerA, playerB]) {
         await page.getByRole("button", { name: "Nouveau joueur" }).click();
-        await page.getByPlaceholder("Prénom").fill(player.first);
-        await page.getByPlaceholder("Nom").fill(player.last);
+        await page.getByPlaceholder("Prénom", { exact: true }).fill(player.first);
+        await page.getByPlaceholder("Nom", { exact: true }).fill(player.last);
         await page.getByRole("button", { name: "Inscrire", exact: true }).click();
         await expect(page.getByText(`${player.first} ${player.last}`)).toBeVisible();
       }
