@@ -90,7 +90,17 @@ export default function VenuesPage() {
                 <h2 className="text-lg font-semibold">{venue.name}</h2>
                 {venue.address && <p className="text-sm text-slate-500">{venue.address}</p>}
               </div>
-              <span className="text-sm text-slate-500">{venue._count.tournaments} tournoi(s)</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-slate-500">{venue._count.tournaments} tournoi(s)</span>
+                <a
+                  href={`/tv/${venue.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
+                >
+                  Écran TV ↗
+                </a>
+              </div>
             </div>
 
             <div>

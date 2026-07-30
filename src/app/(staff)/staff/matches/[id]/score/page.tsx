@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
 import { apiFetch } from "@/lib/utils/api-client";
+import { useRealtimeResource } from "@/lib/realtime/use-realtime-resource";
+import { matchRoom } from "@/lib/realtime/events";
 import { ScoreKeypad } from "@/components/scoring/ScoreKeypad";
 import { CricketBoard } from "@/components/scoring/CricketBoard";
+import { ConnectionStatus } from "@/components/layout/ConnectionStatus";
 
 interface Side {
   id: string;
@@ -60,9 +62,11 @@ function remainingFor(leg: LegView, registrationId: string, startScore: number):
 const fetcher = (url: string) => apiFetch<MatchView>(url);
 
 export default function MatchScorePage({ params }: { params: { id: string } }) {
-  const { data: match, error, isLoading, mutate } = useSWR(`/api/matches/${params.id}`, fetcher, {
-    refreshInterval: 4000,
-  });
+  const { data: match, error, isLoading, connected, mutate } = useRealtimeResource(
+    `/api/matches/${params.id}`,
+    matchRoom(params.id),
+    fetcher,
+  );
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCorrection, setShowCorrection] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
@@ -131,6 +135,9 @@ export default function MatchScorePage({ params }: { params: { id: string } }) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <div className="flex justify-end">
+        <ConnectionStatus connected={connected} />
+      </div>
       <div className="text-center">
         <h1 className="text-3xl font-bold">
           {label(match.registrationA)} <span className="text-slate-400">vs</span> {label(match.registrationB)}

@@ -6,10 +6,16 @@ import { Server as SocketIOServer } from "socket.io";
 // directement cette instance : toute émission passe par l'abstraction emitter,
 // ce qui permet de brancher plus tard un adaptateur Redis pour scaler sans toucher
 // au code métier.
-let io: SocketIOServer | undefined;
+//
+// Stockée sur `globalThis` (comme le client Prisma, cf. lib/prisma/client.ts) :
+// en développement, Next.js compile les routes API via son propre bundler,
+// indépendamment du module chargé par server.ts au démarrage. Une simple variable
+// de module donnerait deux instances distinctes de `io` selon qui l'importe, et
+// les routes API ne verraient jamais l'instance réellement attachée au serveur HTTP.
+const globalForSocket = globalThis as unknown as { io?: SocketIOServer };
 
 export function initSocketServer(httpServer: HttpServer): SocketIOServer {
-  io = new SocketIOServer(httpServer, {
+  const io = new SocketIOServer(httpServer, {
     path: "/socket.io",
     cors: {
       origin: process.env.NEXTAUTH_URL ?? "*",
@@ -31,9 +37,10 @@ export function initSocketServer(httpServer: HttpServer): SocketIOServer {
     });
   });
 
+  globalForSocket.io = io;
   return io;
 }
 
 export function getSocketServer(): SocketIOServer | undefined {
-  return io;
+  return globalForSocket.io;
 }

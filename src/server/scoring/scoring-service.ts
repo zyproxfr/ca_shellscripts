@@ -190,7 +190,17 @@ export async function submitThrow(legId: string, input: SubmitThrowInput, actorU
     return { legCompleted: false, matchCompleted: false, tournamentId: leg.match.tournamentId, matchId: leg.matchId, legId };
   });
 
-  emitToRoom(matchRoom(outcome.matchId), { type: "match:score-updated", matchId: outcome.matchId, legId: outcome.legId, remaining: {} });
+  // Diffusé aussi sur la room tournoi (pas seulement la room match) : l'écran TV,
+  // qui affiche plusieurs matchs en direct simultanément, n'a besoin de rejoindre
+  // qu'une seule room par tournoi plutôt qu'une room par match affiché.
+  const scoreUpdatedEvent = {
+    type: "match:score-updated" as const,
+    matchId: outcome.matchId,
+    legId: outcome.legId,
+    remaining: {},
+  };
+  emitToRoom(matchRoom(outcome.matchId), scoreUpdatedEvent);
+  emitToRoom(tournamentRoom(outcome.tournamentId), scoreUpdatedEvent);
   if (outcome.legCompleted) {
     emitToRoom(tournamentRoom(outcome.tournamentId), {
       type: "match:leg-completed",
@@ -450,9 +460,11 @@ export async function correctLastThrow(legId: string, input: CorrectLastThrowInp
       metadata: { reason: input.reason },
     });
 
-    return { entry: corrected, matchId: leg.matchId };
-  }).then(({ entry, matchId }) => {
-    emitToRoom(matchRoom(matchId), { type: "match:score-updated", matchId, legId: entry.legId, remaining: {} });
+    return { entry: corrected, matchId: leg.matchId, tournamentId: leg.match.tournamentId };
+  }).then(({ entry, matchId, tournamentId }) => {
+    const event = { type: "match:score-updated" as const, matchId, legId: entry.legId, remaining: {} };
+    emitToRoom(matchRoom(matchId), event);
+    emitToRoom(tournamentRoom(tournamentId), event);
     return entry;
   });
 }
