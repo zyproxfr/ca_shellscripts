@@ -66,8 +66,11 @@ export function ScoreKeypad({ remaining, outMode, disabled, onSubmit }: ScoreKey
       </div>
 
       <div className="flex items-center gap-3">
-        <label className="text-sm font-medium">Autre score :</label>
+        <label htmlFor="otherScore" className="text-sm font-medium">
+          Autre score :
+        </label>
         <input
+          id="otherScore"
           type="number"
           min={0}
           max={180}

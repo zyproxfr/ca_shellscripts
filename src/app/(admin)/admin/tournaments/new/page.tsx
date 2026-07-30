@@ -65,8 +65,10 @@ export default function NewTournamentPage() {
 
       <form onSubmit={handleSubmit} className="card space-y-5">
         <div className="space-y-1">
-          <label className="text-sm font-medium">Établissement</label>
-          <select className="input" value={venueId} onChange={(e) => setVenueId(e.target.value)} required>
+          <label htmlFor="venueId" className="text-sm font-medium">
+            Établissement
+          </label>
+          <select id="venueId" className="input" value={venueId} onChange={(e) => setVenueId(e.target.value)} required>
             <option value="">-- Choisir --</option>
             {venues?.map((v) => (
               <option key={v.id} value={v.id}>
@@ -82,14 +84,18 @@ export default function NewTournamentPage() {
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium">Nom du tournoi</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} required />
+          <label htmlFor="name" className="text-sm font-medium">
+            Nom du tournoi
+          </label>
+          <input id="name" className="input" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-sm font-medium">Format</label>
-            <select className="input" value={format} onChange={(e) => setFormat(e.target.value)}>
+            <label htmlFor="format" className="text-sm font-medium">
+              Format
+            </label>
+            <select id="format" className="input" value={format} onChange={(e) => setFormat(e.target.value)}>
               <option value="SINGLE_ELIMINATION">Élimination directe</option>
               <option value="ROUND_ROBIN">Round Robin (poules)</option>
               <option value="DOUBLE_ELIMINATION">Double élimination (bientôt)</option>
@@ -98,8 +104,10 @@ export default function NewTournamentPage() {
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Mode</label>
-            <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
+            <label htmlFor="mode" className="text-sm font-medium">
+              Mode
+            </label>
+            <select id="mode" className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
               <option value="SOLO">Solo</option>
               <option value="TEAM">Équipes</option>
             </select>
@@ -108,8 +116,11 @@ export default function NewTournamentPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-sm font-medium">Participants min.</label>
+            <label htmlFor="minParticipants" className="text-sm font-medium">
+              Participants min.
+            </label>
             <input
+              id="minParticipants"
               type="number"
               min={2}
               className="input"
@@ -118,8 +129,11 @@ export default function NewTournamentPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Participants max. (optionnel)</label>
+            <label htmlFor="maxParticipants" className="text-sm font-medium">
+              Participants max. (optionnel)
+            </label>
             <input
+              id="maxParticipants"
               type="number"
               min={2}
               className="input"
@@ -133,24 +147,37 @@ export default function NewTournamentPage() {
           <legend className="px-1 text-sm font-semibold text-slate-600">Règles de scoring</legend>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1">
-              <label className="text-sm font-medium">Jeu</label>
-              <select className="input" value={gameType} onChange={(e) => setGameType(e.target.value)}>
+              <label htmlFor="gameType" className="text-sm font-medium">
+                Jeu
+              </label>
+              <select id="gameType" className="input" value={gameType} onChange={(e) => setGameType(e.target.value)}>
                 <option value="X501">501</option>
                 <option value="X301">301</option>
                 <option value="CRICKET">Cricket</option>
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Sortie (out)</label>
-              <select className="input" value={outMode} onChange={(e) => setOutMode(e.target.value)} disabled={gameType === "CRICKET"}>
+              <label htmlFor="outMode" className="text-sm font-medium">
+                Sortie (out)
+              </label>
+              <select
+                id="outMode"
+                className="input"
+                value={outMode}
+                onChange={(e) => setOutMode(e.target.value)}
+                disabled={gameType === "CRICKET"}
+              >
                 <option value="STRAIGHT">Simple</option>
                 <option value="DOUBLE">Double</option>
                 <option value="MASTER">Master</option>
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Manches gagnantes</label>
+              <label htmlFor="legsToWinSet" className="text-sm font-medium">
+                Manches gagnantes
+              </label>
               <input
+                id="legsToWinSet"
                 type="number"
                 min={1}
                 className="input"
