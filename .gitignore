@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# production
+build/
+dist/
+
+# env
+.env
+.env*.local
+
+# testing
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# prisma
+prisma/dev.db*
+
+# misc
+.DS_Store
+*.log
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*

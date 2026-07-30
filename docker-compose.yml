@@ -1,0 +1,38 @@
+# Déploiement local au bar : `docker compose up -d` démarre Postgres + l'application.
+# Fonctionne entièrement sur le réseau local, sans dépendance à internet.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dart_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+      POSTGRES_DB: ${POSTGRES_DB:-dart_tournaments}
+    volumes:
+      - dart_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dart_app}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dart_app}:${POSTGRES_PASSWORD:-change_me_in_production}@db:5432/${POSTGRES_DB:-dart_tournaments}?schema=public
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET manquant : copiez .env.example vers .env et générez un secret}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  dart_pgdata:
