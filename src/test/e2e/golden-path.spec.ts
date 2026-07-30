@@ -82,9 +82,13 @@ test.describe("Parcours complet d'un tournoi", () => {
     });
 
     await test.step("Jouer le match jusqu'à la victoire", async () => {
+      // Nom complet (préfixe + suffixe unique) : des exécutions précédentes de ce
+      // test peuvent laisser des matchs en direct avec un prénom similaire, seul le
+      // nom complet identifie sans ambiguïté celui de cette exécution.
+      const fullNameA = `${playerA.first} ${playerA.last}`;
       await page.goto("/staff/matches");
-      await expect(page.getByText(playerA.first, { exact: false }).first()).toBeVisible({ timeout: 20_000 });
-      await page.getByText(playerA.first, { exact: false }).first().click();
+      await expect(page.getByText(fullNameA, { exact: false }).first()).toBeVisible({ timeout: 20_000 });
+      await page.getByText(fullNameA, { exact: false }).first().click();
       await expect(page).toHaveURL(/\/staff\/matches\/.+\/score$/);
 
       await expect(page.getByRole("button", { name: "Démarrer le match" })).toBeVisible({ timeout: 20_000 });
