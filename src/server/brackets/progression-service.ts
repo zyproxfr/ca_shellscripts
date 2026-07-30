@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma/client";
 import { emitToRoom } from "@/lib/realtime/emitter";
 import { tournamentRoom } from "@/lib/realtime/events";
 import { changeTournamentStatus } from "@/server/tournaments/tournament-service";
+import { recomputeStandings } from "@/server/ranking/ranking-service";
+import { updatePlayerStatsForTournament } from "@/server/ranking/player-stats-service";
 import { ValidationError } from "@/lib/utils/errors";
 
 type Tx = Prisma.TransactionClient;
@@ -59,8 +61,13 @@ export async function handleMatchCompletion(matchId: string, actorUserId: string
     };
   });
 
+  // Recalcule le classement après chaque match terminé (cache recalculable à tout
+  // moment, jamais une source de vérité — voir Ranking dans le schéma).
+  await recomputeStandings(outcome.tournamentId);
+
   if (outcome.tournamentComplete) {
     await changeTournamentStatus(outcome.tournamentId, "COMPLETED", actorUserId);
+    await updatePlayerStatsForTournament(outcome.tournamentId);
   }
 
   emitToRoom(tournamentRoom(outcome.tournamentId), {
@@ -69,6 +76,7 @@ export async function handleMatchCompletion(matchId: string, actorUserId: string
     winnerRegistrationId: outcome.winnerRegistrationId,
   });
   emitToRoom(tournamentRoom(outcome.tournamentId), { type: "bracket:updated", tournamentId: outcome.tournamentId });
+  emitToRoom(tournamentRoom(outcome.tournamentId), { type: "ranking:updated", tournamentId: outcome.tournamentId });
   if (outcome.roundCompleted) {
     emitToRoom(tournamentRoom(outcome.tournamentId), { type: "round:completed", tournamentId: outcome.tournamentId, roundId: outcome.roundId });
   }

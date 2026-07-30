@@ -132,6 +132,11 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
               Voir le {tournament.format === "ROUND_ROBIN" ? "tableau des poules" : "bracket"}
             </Link>
           )}
+          {tournament.status !== "DRAFT" && tournament.status !== "REGISTRATION_OPEN" && (
+            <Link href={`/tournaments/${tournament.id}/ranking`} className="btn-secondary">
+              Voir le classement
+            </Link>
+          )}
           {NEXT_STATUS[tournament.status]?.map((action) =>
             action.danger ? (
               <ConfirmButton

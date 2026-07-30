@@ -95,17 +95,26 @@ export async function generateAndPersistBracket(tx: Tx, tournamentId: string) {
     throw new ValidationError("La génération du bracket n'a produit aucun round.");
   }
 
-  // Round Robin : crée les groupes (poules) référencés par les matchs générés.
+  // Round Robin : crée les groupes (poules) référencés par les matchs générés, et
+  // rattache chaque participant à sa poule (déduit des matchs générés : un
+  // participant appartient à la poule de tous les matchs où il apparaît).
   const groupNameToId = new Map<string, string>();
-  const groupNames = new Set<string>();
+  const groupNameToRegistrationIds = new Map<string, Set<string>>();
   for (const round of generatedRounds) {
     for (const match of round.matches) {
-      if (match.groupName) groupNames.add(match.groupName);
+      if (!match.groupName) continue;
+      const set = groupNameToRegistrationIds.get(match.groupName) ?? new Set<string>();
+      if (match.registrationAId) set.add(match.registrationAId);
+      if (match.registrationBId) set.add(match.registrationBId);
+      groupNameToRegistrationIds.set(match.groupName, set);
     }
   }
-  for (const name of groupNames) {
+  for (const [name, registrationIds] of groupNameToRegistrationIds) {
     const group = await tx.group.create({ data: { tournamentId, name } });
     groupNameToId.set(name, group.id);
+    for (const registrationId of registrationIds) {
+      await tx.registrationGroup.create({ data: { groupId: group.id, registrationId } });
+    }
   }
 
   // localMatchId[roundIndex][localIndex] = id réel en base, pour résoudre les

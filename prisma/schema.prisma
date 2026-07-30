@@ -499,6 +499,10 @@ model PlayerStats {
   losses            Int      @default(0)
   winRatio          Float    @default(0)
   average           Float    @default(0)
+  // Totaux bruts servant à recalculer `average` de façon incrémentale et exacte
+  // (moyenne pondérée) à chaque tournoi terminé, sans avoir à rejouer tout l'historique.
+  totalScoreThrown  Int      @default(0)
+  totalDartsThrown  Int      @default(0)
   highestScore      Int      @default(0)
   count180          Int      @default(0)
   count140Plus      Int      @default(0)
