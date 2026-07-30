@@ -1,5 +1,6 @@
 // Erreurs métier typées : chaque route API les attrape pour renvoyer un code HTTP
 // et un message compréhensible, plutôt que de laisser fuiter une stack trace.
+import { ZodError } from "zod";
 
 export class AppError extends Error {
   constructor(
@@ -51,7 +52,19 @@ export class InvalidTransitionError extends AppError {
   }
 }
 
-export function toApiError(error: unknown): { httpStatus: number; body: { error: string; code: string } } {
+export function toApiError(error: unknown): {
+  httpStatus: number;
+  body: { error: string; code: string; issues?: unknown };
+} {
+  if (error instanceof ZodError) {
+    return {
+      httpStatus: 400,
+      body: { error: "Données invalides.", code: "VALIDATION_ERROR", issues: error.flatten() },
+    };
+  }
+  if (error instanceof ValidationError) {
+    return { httpStatus: error.httpStatus, body: { error: error.message, code: error.code, issues: error.issues } };
+  }
   if (error instanceof AppError) {
     return { httpStatus: error.httpStatus, body: { error: error.message, code: error.code } };
   }
