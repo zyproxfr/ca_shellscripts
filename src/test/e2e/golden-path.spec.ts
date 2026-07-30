@@ -92,12 +92,27 @@ test.describe("Parcours complet d'un tournoi", () => {
 
       // 501 en sortie simple : 3 tours de 167 pour le vainqueur suffisent (167*3=501),
       // l'adversaire joue un tour neutre entre chaque pour respecter l'alternance.
-      for (let i = 0; i < 3; i++) {
-        await page.getByLabel("Autre score").fill("167");
-        await page.getByRole("button", { name: "Valider le tour" }).click();
-        await page.getByLabel("Autre score").fill("1");
+      // Le champ est un composant contrôlé qui se réinitialise après chaque
+      // soumission : on s'assure que la valeur est bien passée avant de cliquer,
+      // plutôt que de dépendre uniquement de l'attente d'actionnabilité de Playwright.
+      async function submitScore(value: string) {
+        const input = page.getByLabel("Autre score");
+        await input.fill(value);
+        await expect(input).toHaveValue(value);
         await page.getByRole("button", { name: "Valider le tour" }).click();
       }
+
+      await submitScore("167");
+      await expect(page.getByLabel("Autre score")).toHaveValue("", { timeout: 15_000 });
+      await submitScore("1");
+      await expect(page.getByLabel("Autre score")).toHaveValue("", { timeout: 15_000 });
+      await submitScore("167");
+      await expect(page.getByLabel("Autre score")).toHaveValue("", { timeout: 15_000 });
+      await submitScore("1");
+      await expect(page.getByLabel("Autre score")).toHaveValue("", { timeout: 15_000 });
+      // Dernier tour : termine le match (401->0 impossible, garde 167+167+167=501),
+      // le clavier de score disparaît au profit du panneau "Match terminé".
+      await submitScore("167");
 
       await expect(page.getByText("Match terminé")).toBeVisible({ timeout: 15_000 });
     });
