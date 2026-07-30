@@ -5,6 +5,7 @@ import { emitToRoom } from "@/lib/realtime/emitter";
 import { tournamentRoom } from "@/lib/realtime/events";
 import { ConflictError, InvalidTransitionError, NotFoundError, ValidationError } from "@/lib/utils/errors";
 import { guardTransition, type TournamentForGuard } from "@/server/tournaments/tournament-state-machine";
+import { generateAndPersistBracket } from "@/server/brackets/bracket-service";
 import type { CreateTournamentInput, UpdateTournamentInput } from "@/lib/validation/tournament.schema";
 
 const TOURNAMENT_INCLUDE_FOR_GUARD = {
@@ -203,6 +204,12 @@ export async function changeTournamentStatus(
       });
     }
 
+    // Lancement du tournoi : génération automatique des phases et affectation des
+    // participants aux matchs, en une seule action pour le staff ("Lancer le tournoi").
+    if (targetStatus === "IN_PROGRESS") {
+      await generateAndPersistBracket(tx, tournamentId);
+    }
+
     await recordAudit(tx, {
       actorUserId,
       tournamentId,
@@ -221,6 +228,9 @@ export async function changeTournamentStatus(
     tournamentId,
     status: targetStatus,
   });
+  if (targetStatus === "IN_PROGRESS") {
+    emitToRoom(tournamentRoom(tournamentId), { type: "bracket:updated", tournamentId });
+  }
 
   return updated;
 }

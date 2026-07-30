@@ -124,6 +124,14 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
           <Link href={`/admin/tournaments/${tournament.id}/registrations`} className="btn-secondary">
             Gérer les inscriptions
           </Link>
+          {tournament.status !== "DRAFT" && tournament.status !== "REGISTRATION_OPEN" && (
+            <Link
+              href={`/tournaments/${tournament.id}/${tournament.format === "ROUND_ROBIN" ? "groups" : "bracket"}`}
+              className="btn-secondary"
+            >
+              Voir le {tournament.format === "ROUND_ROBIN" ? "tableau des poules" : "bracket"}
+            </Link>
+          )}
           {NEXT_STATUS[tournament.status]?.map((action) =>
             action.danger ? (
               <ConfirmButton
