@@ -60,7 +60,12 @@ en base avant la mise en service réelle.
 pnpm typecheck   # TypeScript strict
 pnpm lint        # ESLint
 pnpm test        # Vitest (logique métier : machine à états, brackets, scoring, classement)
+pnpm test:e2e    # Playwright — nécessite une base seedée (pnpm prisma:seed)
 ```
+
+Le test e2e (`src/test/e2e/golden-path.spec.ts`) rejoue le parcours complet : connexion
+admin, création de tournoi, inscriptions, check-in, lancement, vérification du bracket,
+puis saisie de score jusqu'à la victoire via l'écran staff.
 
 ## Structure du projet
 
@@ -105,8 +110,7 @@ scripts/         scripts shell (dont les exercices d'origine du repo, hello.sh/v
 
 Double élimination, ligue saisonnière, ELO, QR code de check-in, suggestions de
 checkout, notifications push, intégration cibles électroniques, export CSV/PDF,
-paiement/fidélité, multi-établissement. Voir aussi la section « tests d'intégration
-et e2e » ci-dessous, à étoffer avant un usage en production réelle.
+paiement/fidélité, multi-établissement.
 
 ## Limites connues de la V1
 
@@ -115,7 +119,8 @@ et e2e » ci-dessous, à étoffer avant un usage en production réelle.
 - Correction de score limitée au dernier tour saisi, et impossible une fois le match
   validé (évite d'avoir à rejouer toute la cascade de propagation déjà déclenchée).
 - Tests automatisés : couverture unitaire solide sur la logique métier critique
-  (machine à états, générateurs de bracket, moteurs de scoring, classement) ; les
-  tests d'intégration (DB réelle) et e2e (Playwright) restent à écrire avant une mise
-  en production — les flux ont été validés manuellement de bout en bout à chaque
-  étape de développement.
+  (machine à états, générateurs de bracket, moteurs de scoring, classement) et un
+  scénario e2e couvrant le parcours complet ; les tests d'intégration base de données
+  réelle et des scénarios e2e supplémentaires (double élimination une fois implémentée,
+  écran TV, corrections de score) restent à étoffer avant une mise en production à
+  grande échelle.
