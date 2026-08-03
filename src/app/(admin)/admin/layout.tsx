@@ -18,6 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex gap-4 text-sm font-medium">
             <Link href="/admin/tournaments">Tournois</Link>
             <Link href="/admin/venues">Établissement</Link>
+            <Link href="/admin/users">Utilisateurs</Link>
             <Link href="/" className="text-slate-500">
               Accueil
             </Link>
