@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dart_app}:${POSTGRES_PASSWORD:-change_me_in_production}@db:5432/${POSTGRES_DB:-dart_tournaments}?schema=public
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET manquant : copiez .env.example vers .env et générez un secret}
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:?NEXTAUTH_SECRET manquant : copiez .env.example vers .env et générez un secret}"
       PORT: 3000
     ports:
       - "3000:3000"

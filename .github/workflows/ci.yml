@@ -46,7 +46,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Lint
-        run: pnpm lint -- --max-warnings=0
+        run: pnpm exec eslint . --max-warnings=0
 
       - name: Apply database migrations
         run: pnpm prisma:deploy
