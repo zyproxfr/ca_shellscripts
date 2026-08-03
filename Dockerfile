@@ -19,7 +19,11 @@ RUN pnpm build
 
 FROM base AS runner
 ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
+# node_modules vient de l'étape "build", pas "deps" : c'est là que
+# `pnpm prisma:generate` écrit le client généré (node_modules/.prisma/client) —
+# le copier depuis "deps" (avant génération) fait planter l'app au runtime
+# avec "Cannot find module '.prisma/client/default'".
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma
