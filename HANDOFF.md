@@ -50,6 +50,15 @@ Tailwind CSS, Vitest + Playwright.
    `useRealtimeResource` (socket + polling de secours), écran TV public par établissement (`/tv/[venueId]`).
 7. **Tests + seed + doc** : 40 tests unitaires (Vitest), 1 test e2e Playwright qui rejoue
    le parcours complet, `prisma/seed.ts` (données de démo réalistes), CI GitHub Actions, README.
+8. **Gestion des utilisateurs** (`src/server/users/`, `src/app/api/users/`,
+   `src/app/(admin)/admin/users/`) : création/modification de comptes ADMIN/STAFF,
+   désactivation (bloque la connexion), garde-fous (impossible de se désactiver
+   soi-même, de changer son propre rôle, ou de retirer le dernier admin actif),
+   audit trail. Testé de bout en bout (création, connexion, doublon email, 403 pour
+   un compte STAFF).
+9. **Déploiement Docker de production** (`docker compose up -d --build`) validé de bout
+   en bout en conditions réelles (voir gotchas ci-dessous pour le détail des 4 bugs
+   corrigés) : migrations automatiques au démarrage, seed manuel uniquement.
 
 ## Gotchas / pièges déjà rencontrés — à ne pas refaire
 
@@ -74,27 +83,45 @@ Tailwind CSS, Vitest + Playwright.
   restant à 0 sans `lastDartWasDouble`/`lastDartWasTriple` est traité comme un **bust**, pas
   un rejet — c'est voulu (comportement réel des fléchettes), mais ça peut surprendre en écrivant
   des scripts de test.
-- **Deux liens morts dans le menu admin** (`/admin/boards`, `/admin/users`) ont été retirés
-  récemment : ces pages n'existent pas encore (voir "Ce qui manque" ci-dessous).
+- **`/admin/users` est maintenant une page réelle** (section 8 ci-dessus) — seul
+  `/admin/boards` reste un lien à ne pas ajouter au menu tant que la page n'existe pas.
+- **Corepack résout `pnpm@latest` si aucune version n'est épinglée** : dans l'image Docker
+  (basée sur `node:20-slim`), ça a entraîné l'installation de pnpm 11.x qui exige Node
+  22.13+, avec un échec obscur (`ERR_UNKNOWN_BUILTIN_MODULE: node:sqlite`) au lieu d'une
+  erreur de version claire. Fixé en épinglant `"packageManager": "pnpm@10.34.5"` dans
+  `package.json` — Corepack utilise alors toujours cette version exacte, partout
+  (Docker, CI, postes de dev).
+- **`node:20-slim` n'inclut pas OpenSSL** : le moteur Prisma (généré au `pnpm prisma:generate`,
+  utilisé par `prisma migrate deploy`) en a besoin pour tourner ; sans lui, le conteneur
+  redémarre en boucle avec une erreur "Schema engine error" précédée d'avertissements de
+  détection OpenSSL peu explicites. Fixé en installant `openssl` via `apt-get` dans l'étape
+  `base` du `Dockerfile`.
+- **Ordre des étapes de build Docker et `node_modules`** : le client Prisma généré
+  (`node_modules/.prisma/client`) n'existe qu'APRÈS `pnpm prisma:generate`, qui tourne dans
+  l'étape `build`, pas dans l'étape `deps` (qui ne fait que `pnpm install`). Copier
+  `node_modules` depuis `deps` dans l'étape finale `runner` fait planter l'app au runtime
+  avec `Cannot find module '.prisma/client/default'` alors que le build Next.js a réussi.
+  Toujours copier `node_modules` depuis l'étape `build` dans `runner`.
 
 ## Ce qui manque / prochaines priorités
 
 Par ordre d'impact pour un usage réel au bar :
 
-1. **Gestion des utilisateurs (UI)** — impossible de créer un compte staff/admin autrement
-   que via `prisma/seed.ts`. C'est la lacune la plus bloquante pour un vrai déploiement.
-2. **Auto-inscription joueur** — actuellement le staff inscrit tout le monde au comptoir
+1. **Auto-inscription joueur** — actuellement le staff inscrit tout le monde au comptoir
    (décision V1 assumée, mais à reconsidérer si besoin d'un lien d'inscription en ligne).
-3. **Formats non implémentés** (modèle de données prêt, générateur à écrire dans
+2. **Formats non implémentés** (modèle de données prêt, générateur à écrire dans
    `src/server/brackets/`, suivre le pattern des stubs existants) : Double élimination,
    Ligue (classement multi-soirées), Custom.
-4. **ELO**, **QR code de check-in**, **notifications**, **export CSV/PDF**,
+3. **ELO**, **QR code de check-in**, **notifications**, **export CSV/PDF**,
    **intégration cibles électroniques**, **paiement/fidélité**, **multi-établissement** —
    tous pensés dans l'architecture (`PlayerStats.eloRating`, `Notification`, `Board`,
    `formatConfig` en Json) mais pas codés.
-5. **Tests** : couverture solide sur la logique métier + 1 e2e du parcours complet, mais
+4. **Tests** : couverture solide sur la logique métier + 1 e2e du parcours complet, mais
    pas de tests d'intégration DB réelle, ni d'e2e sur la correction de score / l'écran TV /
-   les futurs formats.
+   les futurs formats / la gestion des utilisateurs.
+5. **Page `/admin/boards`** — gestion des plateaux (déjà modélisée en base, `Board`) mais
+   pas d'UI dédiée ; actuellement les plateaux ne sont visibles qu'en lecture au sein des
+   tournois.
 
 ## Repères dans le code
 
