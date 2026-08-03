@@ -1,0 +1,14 @@
+node_modules
+.pnpm-store
+.next
+.git
+.env
+.env*.local
+coverage
+playwright-report
+test-results
+blob-report
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*

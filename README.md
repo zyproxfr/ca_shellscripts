@@ -49,10 +49,17 @@ cp .env.example .env    # définir un vrai NEXTAUTH_SECRET : openssl rand -base6
 docker compose up -d    # démarre Postgres + l'application
 ```
 
+Le conteneur `app` applique automatiquement les migrations Prisma à chaque démarrage
+(`docker-entrypoint.sh`), donc une base Postgres neuve obtient son schéma sans action
+manuelle. **Le seed de démonstration n'est en revanche jamais chargé automatiquement**
+(il viderait et recréerait les données à chaque redémarrage — dangereux avec de vraies
+données de bar) : pour le premier compte admin, deux options :
+- charger le seed de démo tel quel (pratique pour découvrir l'appli, mais à ne pas
+  garder en production réelle) : `docker compose exec app pnpm prisma:seed` ;
+- ou créer directement un premier compte `ADMIN` en base avant la mise en service réelle.
+
 L'application est alors accessible sur le réseau local du bar (tablette staff, TV
-publique) sans dépendre d'une connexion internet. Le premier compte admin doit être
-créé via `pnpm prisma:seed` (à adapter en retirant les données de démo) ou directement
-en base avant la mise en service réelle.
+publique) sans dépendre d'une connexion internet.
 
 ## Qualité et tests
 
