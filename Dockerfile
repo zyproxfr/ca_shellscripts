@@ -1,5 +1,9 @@
 # Image de production pour un déploiement auto-hébergé au bar (docker compose up).
 FROM node:20-slim AS base
+# node:20-slim n'inclut pas OpenSSL par défaut : le moteur Prisma (generate,
+# migrate deploy) en a besoin pour fonctionner, sinon échec silencieux au
+# démarrage du conteneur ("Schema engine error").
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 WORKDIR /app
 
